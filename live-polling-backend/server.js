@@ -4,8 +4,15 @@ const http = require("http");
 const { Server } = require("socket.io");
 const cors = require("cors");
 const path = require("path");
+const NodeCache = require("node-cache");
+
+const memoryCache = new NodeCache({ stdTTL: 3600 });
+
+let chatHistory = [];
+let pollIndex = 0;
 
 app.use(cors());
+let currentTimer = null;
 
 const __dirname1 = path.resolve(__dirname, "dist");
 if (process.env.NODE_ENV === "production") {
@@ -17,7 +24,6 @@ if (process.env.NODE_ENV === "production") {
 }
 
 const server = http.createServer(app);
-
 const io = new Server(server, {
   cors: {
     origin: "*",
@@ -33,77 +39,99 @@ let currentQuestion = {};
 const connectedStudents = new Map();
 
 io.on("connection", (socket) => {
-
   socket.on("teacher-ask-question", (questionData) => {
-    // Receive full option objects
+    if (currentTimer) clearTimeout(currentTimer);
+
     const question = {
       question: questionData.question,
-      options: questionData.options, // [{ text: 'Yes', isyes: true }, ...]
+      options: questionData.options,
       optionsFrequency: {},
       answered: false,
       results: {},
       timer: questionData.timer,
     };
 
-    // Initialize frequency using text only
     questionData.options.forEach((opt) => {
       question.optionsFrequency[opt.text] = 0;
     });
 
     currentQuestion = question;
 
+    connectedStudents.forEach((student) => {
+      student.voted = false;
+    });
+
+    io.emit("student-connected", Array.from(connectedStudents.values()));
     io.emit("new-question", currentQuestion);
 
-    // Auto-end poll after timer
-    setTimeout(() => {
-      if (!currentQuestion.answered) {
-        const totalVotes = Object.values(currentQuestion.optionsFrequency).reduce((a, b) => a + b, 0);
+    currentTimer = setTimeout(() => handlePollCompletion(), question.timer * 1000);
+  });
 
-        if (totalVotes > 0) {
-          Object.keys(currentQuestion.optionsFrequency).forEach((text) => {
-            const count = currentQuestion.optionsFrequency[text];
-            currentQuestion.results[text] = parseFloat(((count / totalVotes) * 100).toFixed(2));
-          });
-        } else {
-          Object.keys(currentQuestion.optionsFrequency).forEach((text) => {
-            currentQuestion.results[text] = 0;
-          });
-        }
+  socket.on("kick-student", (socketId) => {
+    const student = connectedStudents.get(socketId);
+    if (student) {
+      io.to(socketId).disconnectSockets(true);
+      connectedStudents.delete(socketId);
+      io.emit("student-connected", Array.from(connectedStudents.values()));
+    }
+  });
 
-        currentQuestion.answered = true;
+  socket.on("chat-message", ({ sender, message }) => {
+    const chatEntry = {
+      sender,
+      message,
+      timestamp: new Date().toISOString(),
+    };
 
-        io.emit("polling-results", currentQuestion.results);
-        io.emit("new-question", currentQuestion); // Optional UI sync
-      }
-    }, question.timer * 1000);
+    chatHistory.push(chatEntry);
+    if (chatHistory.length > 100) chatHistory.shift();
+
+    io.emit("chat-message", chatEntry);
+  });
+
+  socket.on("get-chat-history", () => {
+    socket.emit("chat-history", chatHistory);
+  });
+
+  socket.on("get-previous-polls", () => {
+    const polls = [];
+    for (let i = 0; i < 10; i++) {
+      const poll = memoryCache.get(`poll-${i}`);
+      if (poll) polls.push(poll);
+    }
+    socket.emit("previous-polls", polls);
   });
 
   socket.on("handle-polling", ({ option }) => {
+    const student = connectedStudents.get(socket.id);
+
     if (
       currentQuestion &&
       typeof option === "string" &&
       currentQuestion.optionsFrequency.hasOwnProperty(option)
     ) {
-      currentQuestion.optionsFrequency[option] += 1;
+      if (student && !student.voted) {
+        currentQuestion.optionsFrequency[option] += 1;
 
-      const totalVotes = Object.values(currentQuestion.optionsFrequency).reduce((a, b) => a + b, 0);
-
-      Object.keys(currentQuestion.optionsFrequency).forEach((text) => {
-        const count = currentQuestion.optionsFrequency[text];
-        currentQuestion.results[text] = parseFloat(((count / totalVotes) * 100).toFixed(2));
-      });
-
-      currentQuestion.answered = true;
-
-      const student = connectedStudents.get(socket.id);
-      if (student) {
         student.voted = true;
         connectedStudents.set(socket.id, student);
-        io.emit("student-vote-validation", Array.from(connectedStudents.values()));
-      }
 
-      io.emit("polling-results", currentQuestion.results);
-      io.emit("new-question", currentQuestion); // Sync results to all
+        io.emit("student-vote-validation", Array.from(connectedStudents.values()));
+
+        const totalVotes = Object.values(currentQuestion.optionsFrequency).reduce((a, b) => a + b, 0);
+        Object.keys(currentQuestion.optionsFrequency).forEach((text) => {
+          const count = currentQuestion.optionsFrequency[text];
+          currentQuestion.results[text] = parseFloat(((count / totalVotes) * 100).toFixed(2));
+        });
+
+        io.emit("polling-results", currentQuestion.results);
+        io.emit("new-question", currentQuestion);
+
+        const allVoted = Array.from(connectedStudents.values()).every((s) => s.voted);
+        if (allVoted) handlePollCompletion();
+      } else {
+        socket.emit("error-message", "You have already voted.");
+      }
     } else {
       console.warn(`Invalid vote received from ${socket.id}:`, option);
     }
@@ -128,3 +156,36 @@ io.on("connection", (socket) => {
     io.emit("student-disconnected", Array.from(connectedStudents.values()));
   });
 });
+
+function handlePollCompletion() {
+  if (!currentQuestion.answered) {
+    const totalVotes = Object.values(currentQuestion.optionsFrequency).reduce((a, b) => a + b, 0);
+
+    if (totalVotes > 0) {
+      Object.keys(currentQuestion.optionsFrequency).forEach((text) => {
+        const count = currentQuestion.optionsFrequency[text];
+        currentQuestion.results[text] = parseFloat(((count / totalVotes) * 100).toFixed(2));
+      });
+    } else {
+      Object.keys(currentQuestion.optionsFrequency).forEach((text) => {
+        currentQuestion.results[text] = 0;
+      });
+    }
+
+    currentQuestion.answered = true;
+
+    const completedPoll = {
+      question: currentQuestion.question,
+      options: currentQuestion.options,
+      optionsFrequency: { ...currentQuestion.optionsFrequency },
+      results: { ...currentQuestion.results },
+      timestamp: new Date().toISOString(),
+    };
+
+    memoryCache.set(`poll-${pollIndex}`, completedPoll);
+    pollIndex = (pollIndex + 1) % 10;
+
+    io.emit("polling-results", currentQuestion.results);
+    io.emit("new-question", currentQuestion);
+  }
+}

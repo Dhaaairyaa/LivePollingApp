@@ -1,13 +1,31 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import PollingResult from "./PollingResult";
 import { Button } from "react-bootstrap";
 import IntervueLogo from "../Components/IntervueLogo";
+import ChatBox from "../Components/Chatbox";
+import { useNavigate } from "react-router-dom";
 
 const Teacher = ({ socket }) => {
+  const navigate = useNavigate();
+
   const [questionRaw, setQuestionRaw] = useState("");
   const [options, setOptions] = useState([{ text: "", isyes: null }]);
   const [questionPublished, setQuestionPublished] = useState(false);
   const [timer, setTimer] = useState(60);
+  const [showPeoplePanel, setShowPeoplePanel] = useState(false);
+  const [showChatPanel, setShowChatPanel] = useState(false);
+  const [students, setStudents] = useState([]);
+
+  useEffect(() => {
+    socket.on("student-connected", (studentList) => {
+      setStudents(studentList);
+    });
+  
+    return () => {
+      socket.off("student-connected");
+    };
+  }, [socket]);
+
   const maxWords = 100;
 
   const handleChange = (e) => {
@@ -36,6 +54,10 @@ const Teacher = ({ socket }) => {
     }
   };
 
+  const showResponse = () => {
+    navigate("/responses");
+  };
+  
   const addOption = () =>
     setOptions((prev) => [...prev, { text: "", isyes: null }]);
 
@@ -57,16 +79,19 @@ const Teacher = ({ socket }) => {
   return (
     <div className="">
       {questionPublished ? (
-        <>
+        <div>
           <PollingResult socket={socket} />
-          <Button
-            variant="primary"
-            className="bg-green-600 rounded-lg h-10 w-1/4 font-semibold"
-            onClick={askAnotherQuestion}
-          >
-            Ask Another Question?
-          </Button>
-        </>
+          <div className="flex items-center justify-center pb-6">
+            <button
+              variant="primary"
+              className="bg-[#7451B6] rounded-lg h-10 w-1/4 font-semibold text-white"
+              onClick={askAnotherQuestion}
+            >
+              Ask Another Question?
+            </button>
+          </div>
+          
+        </div>
       ) : (
         <div className="flex flex-col gap-y-5 text-white pl-20 pt-20">
           <IntervueLogo></IntervueLogo>
@@ -163,41 +188,119 @@ const Teacher = ({ socket }) => {
             </div>
           </div>
 
-          <div className="flex justify-between">
-            <Button
+          <div className="flex justify-between mr-20">
+            <button
               variant="outline-info"
               className="
               bg-white text-[#7451B6]
-              p-[10px] rounded-[11px] w-[169px] border-[#7451B6]
-              hover:!bg-[#7451B6] hover:!text-white hover:!border-[#7451B6]
+              p-[10px] rounded-[11px] w-[169px] border border-[#7451B6]
+              hover:!bg-[#7451B6] hover:!text-white 
               transition ml-12"              
               onClick={addOption}
             >
               Add More option
-            </Button>
-          </div>
+            </button>
 
-          
-        </div>
-      )}
+            <div className="flex space-x-2">
 
-        <div className="pb-4 pt-14">
-            <hr className="border-t border-gray-800 mb-4" />
-
-            {/* Right-aligned Button */}
-            <div className="flex justify-end">
-              <Button
-                className="bg-[#7451B6] text-[#7451B6] p-[10px] rounded-[11px]
-                          border-[#7451B6] opacity-90 border
+            <button
+                className="bg-[#7451B6] text-[#7451B6] p-[10px] rounded-[11px] border
+                          border-[#7451B6] opacity-90 
                           text-white
                           hover:scale-105
-                          transform hover:scale-105 transition-transform  mr-10"
+                          transform hover:scale-105 transition-transform ml-40"
                 onClick={askQuestion}
               >
                 Ask Question
-              </Button>
+              </button>
+
+
+              <button
+                className="bg-[#7451B6] text-white p-[10px] rounded-[11px] border border-[#7451B6] opacity-90 hover:scale-105 transition-transform ml-40"
+                onClick={showResponse}
+              >
+                Show Previous Responses
+              </button>
+
+
+
+            </div>
+
+          </div>
+
+          <button
+            onClick={() => {
+              setShowPeoplePanel((prev) => {
+                if (!prev) setShowChatPanel(false);
+                return !prev;
+              });
+            }}
+            className="fixed bottom-6 right-6 bg-[#4E377B] text-white p-3 rounded-full shadow-lg hover:bg-[#36285a] transition z-50"
+            aria-label="Show People"
+          >
+            👥
+          </button>
+
+          {/* Chat button */}
+          <button
+            onClick={() => {
+              setShowChatPanel((prev) => {
+                if (!prev) setShowPeoplePanel(false);
+                return !prev;
+              });
+            }}
+            className="fixed bottom-6 right-20 bg-[#4E377B] text-white p-3 rounded-full shadow-lg hover:bg-[#36285a] transition z-50"
+            aria-label="Show Chat"
+          >
+            💬
+          </button>
+
+            {/* People Panel */}
+            {showPeoplePanel && (
+              <div className="fixed bottom-20 right-6 w-72 bg-white border border-gray-300 rounded-xl shadow-xl p-4 z-50">
+                <div className="flex justify-between items-center mb-2">
+                  <h3 className="text-lg font-bold text-black">Participants</h3>
+                  <button
+                    onClick={() => setShowPeoplePanel(false)}
+                    className="text-gray-500 hover:text-black text-2xl font-semibold"
+                    aria-label="Close"
+                  >
+                    &times;
+                  </button>
+                </div>
+                <ul className="space-y-2 text-black text-sm max-h-48 overflow-auto">
+                {students.map((student) => (
+                  <li key={student.socketId} className="flex justify-between items-center">
+                    <span>{student.name}</span>
+                    <button
+                      onClick={() => socket.emit("kick-student", student.socketId)}
+                      className="bg-red-500 text-white px-2 py-1 rounded text-xs hover:bg-red-600"
+                    >
+                      Remove
+                    </button>
+                  </li>
+                ))}
+              </ul>
+
+              </div>
+            )}
+
+              {showChatPanel && (
+                  <ChatBox socket={socket} username="Teacher" role="Teacher" />
+              )}
+        </div>
+      
+      )}
+
+        {!questionPublished && <div className="pb-4 pt-14">
+            <hr className="border-t border-gray-800 mb-0" />
+
+            {/* Right-aligned button */}
+            <div className="">
+              
             </div>
           </div>
+      }
     </div>
   );
 };
