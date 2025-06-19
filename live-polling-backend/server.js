@@ -1,9 +1,10 @@
 const express = require("express");
+const path = require("path");
 const app = express();
 const http = require("http");
 const { Server } = require("socket.io");
 const cors = require("cors");
-const path = require("path");
+
 const NodeCache = require("node-cache");
 
 const memoryCache = new NodeCache({ stdTTL: 3600 });
@@ -14,14 +15,13 @@ let pollIndex = 0;
 app.use(cors());
 let currentTimer = null;
 
-const __dirname1 = path.resolve(__dirname, "dist");
-if (process.env.NODE_ENV === "production") {
-  app.use(express.static(__dirname1));
-  app.get("*", (req, res) => {
-    const indexfile = path.join(__dirname, "dist", "index.html");
-    return res.sendFile(indexfile);
-  });
-}
+const __dirname1 = path.resolve(__dirname, "../client/build");
+app.use(express.static(path.resolve(__dirname, "../client/build")));
+app.get("*", (req, res) => {
+  res.sendFile(path.resolve(__dirname, "../client/build", "index.html"));
+});
+
+
 
 const server = http.createServer(app);
 const io = new Server(server, {
