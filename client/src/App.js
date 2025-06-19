@@ -9,7 +9,10 @@ import KickedOut from "./pages/KickedOut";
 import ShowPrevResponse from "./pages/ShowPrevResponse"; // optional
 import { SocketContext } from "./Context/SocketContext";
 
-const socket = io.connect("http://localhost:3001");
+const socket = io("http://52.55.140.8", {
+  path: "/socket.io", // Ensure it matches your Nginx config
+});
+
 
 const App = () => {
   return (
