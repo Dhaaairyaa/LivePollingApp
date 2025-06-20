@@ -81,10 +81,14 @@ const Teacher = ({ socket }) => {
       {questionPublished ? (
         <div>
           <PollingResult socket={socket} />
-          <div className="flex items-center justify-center pb-6">
+          <div className="flex items-center justify-center">
             <button
               variant="primary"
-              className="bg-[#7451B6] rounded-lg h-10 w-1/4 font-semibold text-white"
+              className="bg-[#7451B6] text-[#7451B6] p-[10px] rounded-[11px] border
+              border-[#7451B6] opacity-90 
+              text-white
+              hover:scale-105
+              transform hover:scale-105 transition-transform"
               onClick={askAnotherQuestion}
             >
               Ask Another Question?
@@ -93,7 +97,7 @@ const Teacher = ({ socket }) => {
           
         </div>
       ) : (
-        <div className="flex flex-col gap-y-5 text-white pl-20 pt-20">
+      <div className="flex flex-col gap-y-5 text-white pl-5 md:pl-10 lg:pl-20 pt-5 md:pt-10 lg:pt-20 overflow-y-scroll">
           <IntervueLogo></IntervueLogo>
           <h1 className="text-black font-sora text-[40px] font-light">
             Let’s <span className="font-normal">Get Started</span>
@@ -103,8 +107,8 @@ const Teacher = ({ socket }) => {
           </p>
 
           {/* Question, timer, word counter... */}
-          <div className="relative w-full max-w-[865px] flex flex-col space-y-2">
-            <div className="flex justify-between items-center">
+          <div className="relative w-full max-w-[350px] md:max-w-[865px] flex flex-col space-y-2">
+            <div className="flex justify-between items-center md:flex-row flex-col">
               <p className="text-black text-[20px]">Timer (seconds)</p>
               <div className="inline-flex items-center bg-[#F1F1F1] rounded-lg">
                 <input
@@ -129,7 +133,7 @@ const Teacher = ({ socket }) => {
             </div>
           </div>
 
-          <div className="max-w-[700px] flex flex-col space-y-2">
+          <div className="max-w-[350px] md:max-w-[700px] flex flex-col space-y-2">
             <div className="text-black flex justify-between">
               <p>
                 Edit Options
@@ -188,20 +192,20 @@ const Teacher = ({ socket }) => {
             </div>
           </div>
 
-          <div className="flex justify-between mr-20">
+          <div className="flex justify-between md:mr-20 mr-5">
             <button
               variant="outline-info"
               className="
               bg-white text-[#7451B6]
               p-[10px] rounded-[11px] w-[169px] border border-[#7451B6]
               hover:!bg-[#7451B6] hover:!text-white 
-              transition ml-12"              
+              transition md:ml-12"              
               onClick={addOption}
             >
               Add More option
             </button>
 
-            <div className="flex space-x-2">
+            <div className="flex space-x-2 flex-col md:flex-row">
 
             <button
                 className="bg-[#7451B6] text-[#7451B6] p-[10px] rounded-[11px] border

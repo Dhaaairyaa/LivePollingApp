@@ -15,7 +15,7 @@ const PollingResultChart = ({ socket }) => {
     return () => socket.off("new-question", handler);
   }, [socket]);
 
-  if (!currentQuestion) return <div className="text-white text-xl">Waiting for question...</div>;
+  if (!currentQuestion) return <div className="text-[#F2F2F2] text-xl">Waiting for question...</div>;
 
   const labels = Object.keys(currentQuestion.optionsFrequency);
   const dataValues = labels.map((opt) => parseInt(currentQuestion.results[opt] ?? 0, 10));
@@ -26,8 +26,8 @@ const PollingResultChart = ({ socket }) => {
       {
         label: "Votes (%)",
         data: dataValues,
-        backgroundColor: labels.map((_, i) => `hsl(${(i * 60) % 360}, 70%, 55%)`),
-        borderRadius: 6,
+        backgroundColor: '#7451B6',
+        borderRadius: 10,
         barPercentage: 0.6,
       },
     ],
@@ -78,9 +78,9 @@ const PollingResultChart = ({ socket }) => {
   };
 
   return (
-    <div className="w-screen max-h-screen flex items-center justify-center p-4 bg-white mb-4 mt-20">
+    <div className="w-screen md:max-h-screen max-h-[570px] flex items-center justify-center p-4 bg-white mb-4 mt-20">
       <div className="shadow-2xl rounded-xl bg-gradient-to-r from-[#343434] to-[#6E6E6E] p-8 pb-2 max-w-2xl w-full border border-[#4fd1c5]">
-        <h2 className="text-center flex justify-center items-center text-4xl font-extrabold mb-6 text-white">
+        <h2 className="text-center flex justify-center items-center text-4xl font-extrabold mb-6 text-[#F2F2F2]">
           <img src={tower} alt="Tower" width="32" height="32" className="mr-3" />
           Live Results
         </h2>

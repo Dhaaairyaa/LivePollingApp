@@ -23,7 +23,7 @@ const socket = useContext(SocketContext);
   }, [socket]);
 
   return (
-    <div className="p-4 max-w-4xl mx-auto bg-white rounded shadow">
+    <div className="p-4 max-w-4xl mx-auto bg-[#F2F2F2] rounded shadow">
       <h2 className="text-2xl font-bold mb-4 text-[#4E377B]">Previous Polls</h2>
 
       {previousPolls.length === 0 ? (
@@ -37,7 +37,7 @@ const socket = useContext(SocketContext);
                 {poll.options.map((opt, i) => (
                   <li
                     key={i}
-                    className="flex justify-between items-center bg-white px-3 py-2 rounded border"
+                    className="flex justify-between items-center bg-[#F2F2F2] px-3 py-2 rounded border"
                   >
                     <span className="text-gray-700">{opt.text}</span>
                     <span className="text-sm text-[#4E377B] font-medium">

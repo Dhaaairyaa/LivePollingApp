@@ -26,7 +26,7 @@ const StudentInitial = () => {
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Enter your name"
                 required
-                className="w-[45%] h-10 p-2.5 border border-[#0dcaf0] rounded-md bg-[#2a444a] outline-none text-white"
+                className="w-[45%] h-10 p-2.5 border border-[#0dcaf0] rounded-md bg-[#2a444a] outline-none text-[#F2F2F2]"
             />
             </div>
 

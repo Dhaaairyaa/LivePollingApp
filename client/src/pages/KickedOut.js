@@ -6,7 +6,7 @@ const KickedOut = () => {
         window.location.href = "/";
     };
   return (
-    <div className="flex items-center justify-center min-h-screen bg-white">
+    <div className="flex items-center justify-center min-h-screen bg-[#F2F2F2]">
         <div className="flex flex-col items-center justify-center space-y-5 text-center">
             <IntervueLogo />
             <h2 className="text-[#000000] font-sora text-[40px] max-w-[737px]">

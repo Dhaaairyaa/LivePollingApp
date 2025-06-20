@@ -128,7 +128,7 @@ const Student = ({ socket }) => {
         datasets: [{
           label: 'Votes (%)',
           data: values,
-          backgroundColor: labels.map((_, idx) => `hsl(${(idx * 60) % 360}, 70%, 55%)`),
+          backgroundColor: '#7451B6',
           borderRadius: 6,
           barPercentage: 0.6,
         }],
@@ -148,9 +148,9 @@ const Student = ({ socket }) => {
             },
             title: {
               display: true,
-              text: '%',
+              text: 'Percentage of votes%',
               color: '#ffffff',
-              font: { size: 14, weight: 'bold' },
+              font: { size: 14, weight: 'normal' },
             },
           },
           x: {
@@ -185,14 +185,15 @@ const Student = ({ socket }) => {
   };
 
   return (
-    <div className="flex justify-center w-full h-[100] p-40">
+    <div className="flex justify-center w-full h-[100] p-0 md:p-40  ">
       {showQuestion && name ? (
         <div className="w-full">
           {currentQuestion ? (
             currentQuestion.answered === false && votingValidation === false ? (
               <div className="gap-y-4 gap-x-4 ml-0 md:ml-4 p-12">
+                <p className="text-lg">Welcome {name}!</p>
                 <div className="flex flex-col space-y-0 border border-[#AF8FF1] rounded-lg">
-                  <div className="bg-gradient-to-r from-[#343434] to-[#6E6E6E] rounded-t-lg text-white p-3">
+                  <div className="bg-gradient-to-r from-[#343434] to-[#6E6E6E] rounded-t-lg text-[#F2F2F2] p-3">
                     <h2 className="text-xl font-bold">Question: {currentQuestion.question}</h2>
                     <div className="flex justify-between items-center mt-2">
                       <span className="text-sm text-gray-300">
@@ -213,7 +214,7 @@ const Student = ({ socket }) => {
                           onClick={() => setSelectedOption(option)}
                         >
                           <span
-                            className="flex-shrink-0 inline-flex items-center justify-center w-8 h-8 text-white font-semibold rounded-full border"
+                            className="flex-shrink-0 inline-flex items-center justify-center w-8 h-8 text-[#F2F2F2] font-semibold rounded-full border"
                             style={{
                               backgroundColor: selectedOption?.text === option.text ? '#8F64E1' : '#D3D3D3',
                               borderColor: selectedOption?.text === option.text ? '#8F64E1' : '#D3D3D3',
@@ -230,7 +231,7 @@ const Student = ({ socket }) => {
 
                 <div className="flex justify-end w-full mt-10">
                   <button
-                    className="h-10 bg-[#8F64E1] w-1/5 rounded-lg font-semibold hover:scale-105 transition-transform"
+                    className="h-10 bg-[#8F64E1] w-1/2 md:w-1/5 rounded-lg font-semibold hover:scale-105 transition-transform"
                     variant="primary"
                     onClick={handlePoling}
                     disabled={!selectedOption}
@@ -240,9 +241,10 @@ const Student = ({ socket }) => {
                 </div>
               </div>
             ) : (
-              <div className="flex items-center justify-center bg-white flex-col">
+              <div className="flex items-center justify-center bg-white flex-col pl-3 md:pl-0 pr-3 md:pr-0 pt-48 md:pt-0">
+                
                 <div className="p-4 bg-gradient-to-r from-[#343434] to-[#6E6E6E] border border-[#6edff6] rounded-lg max-w-lg w-full m-4">
-                  <h2 className="flex items-center justify-center text-xl font-bold text-white mb-4">
+                  <h2 className="flex items-center justify-center text-xl font-bold text-[#F2F2F2] mb-4">
                     <img src={tower} alt="Tower" width="20" className="mr-3" />
                     Live Results
                   </h2>
@@ -253,13 +255,13 @@ const Student = ({ socket }) => {
                 <button onClick={loadNext} className="
                     bg-white text-[#7451B6] font-bold
                     p-[10px] rounded-[11px] w-[169px] border border-[#7451B6]
-                    hover:!bg-[#7451B6] hover:!text-white 
+                    hover:!bg-[#7451B6] hover:!text-[#F2F2F2] 
                     transition ml-12"  >
                       Next Question &rarr;
                     </button>
                 <button
                   onClick={() => setShowChatPanel((prev) => !prev)}
-                  className="fixed bottom-6 right-20 bg-[#4E377B] text-white p-3 rounded-full shadow-lg hover:bg-[#36285a] transition z-50"
+                  className="fixed bottom-6 right-20 bg-[#4E377B] text-[#F2F2F2] p-3 rounded-full shadow-lg hover:bg-[#36285a] transition z-50"
                   aria-label="Toggle Chat"
                 >
                   💬
@@ -269,42 +271,42 @@ const Student = ({ socket }) => {
               </div>
             )
           ) : (
-            <div className="flex flex-col items-center justify-center space-y-4">
-              <IntervueLogo />
-              <h1 className="text-center text-lg">Welcome, {name}</h1>
-              <h2 className="text-[33px]">
-                Wait for the teacher to ask questions..
-              </h2>
-              <div className="mt-8">
-                <svg className="w-12 h-12 animate-spin" viewBox="0 0 50 50">
-                  <defs>
-                    <linearGradient id="spinner-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="#7565D9" />
-                      <stop offset="100%" stopColor="#4D0ACD" />
-                    </linearGradient>
-                  </defs>
-                  <circle
-                    cx="25"
-                    cy="25"
-                    r="20"
-                    fill="none"
-                    stroke="url(#spinner-gradient)"
-                    strokeWidth="5"
-                    strokeLinecap="round"
-                    strokeDasharray="31.4 31.4"
-                  />
-                </svg>
+            <div className="min-h-screen flex items-center justify-center bg-gray-100">
+                <div className="flex flex-col items-center justify-center space-y-4">
+                  <IntervueLogo />
+                  <h1 className="text-center text-lg">Welcome, {name}</h1>
+                  <h2 className="md:text-[33px] text-[20px]">
+                    Wait for the teacher to ask questions..
+                  </h2>
+                  <div className="mt-8">
+                    <svg className="w-12 h-12 animate-spin" viewBox="0 0 50 50">
+                      <defs>
+                        <linearGradient id="spinner-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                          <stop offset="0%" stopColor="#7565D9" />
+                          <stop offset="100%" stopColor="#4D0ACD" />
+                        </linearGradient>
+                      </defs>
+                      <circle
+                        cx="25"
+                        cy="25"
+                        r="20"
+                        fill="none"
+                        stroke="url(#spinner-gradient)"
+                        strokeWidth="5"
+                        strokeLinecap="round"
+                        strokeDasharray="31.4 31.4"
+                      />
+                    </svg>
+                  </div>
+                  <button
+                    onClick={() => setShowChatPanel((prev) => !prev)}
+                    className="fixed bottom-6 right-20 bg-[#4E377B] text-[#F2F2F2] p-3 rounded-full shadow-lg hover:bg-[#36285a] transition z-50"
+                    aria-label="Toggle Chat"
+                  >
+                    💬
+                  </button>
+                  {showChatPanel&&<ChatBox socket={socket} username={name} role="Teacher" />}
               </div>
-              <button
-                onClick={() => setShowChatPanel((prev) => !prev)}
-                className="fixed bottom-6 right-20 bg-[#4E377B] text-white p-3 rounded-full shadow-lg hover:bg-[#36285a] transition z-50"
-                aria-label="Toggle Chat"
-              >
-                💬
-              </button>
-
-              {showChatPanel&&<ChatBox socket={socket} username={name} role="Teacher" />}
-
             </div>
           )}
         </div>
@@ -328,7 +330,7 @@ const Student = ({ socket }) => {
             />
           </div>
           <button
-            className="bg-gradient-to-r from-[#7565D9] to-[#4D0ACD] text-white p-[10px] rounded-[11px] w-[233px] transition transform hover:scale-105 mt-10"
+            className="bg-gradient-to-r from-[#7565D9] to-[#4D0ACD] text-[#F2F2F2] p-[10px] rounded-[11px] w-[233px] transition transform hover:scale-105 mt-10"
             onClick={handleSubmit}
           >
             Continue
